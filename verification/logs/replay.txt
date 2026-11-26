@@ -1,0 +1,4 @@
+Mean residual and rounding checks: 1,200 exact rational model/action pairs.
+Actual first-round model grid: all 11,368 models and 34,104 action predictions checked.
+Atomic family: 915 exact distribution, gap and chi-square-bound checks.
+Worked illustration: all three intervention pairs and the exact reward residual passed.

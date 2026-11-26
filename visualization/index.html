@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interventional means</title>
+<style>
+:root{color-scheme:dark;--bg:#11152b;--panel:#1c2441;--text:#f4f7ff;--muted:#bdc9e2;--ref:#60efc7;--cand:#eeadff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font:clamp(16px,3.6vw,18px)/1.45 system-ui,sans-serif;color:var(--text)}
+main{max-width:47rem;margin:auto;padding:clamp(.8rem,4vw,2rem)}h1,p{margin:0 0 .65rem}h1{font-size:clamp(1.9rem,8vw,3.3rem);line-height:1.04}h2{margin:.7rem 0 .25rem;font-size:1.3rem}.intro{color:var(--muted);max-width:41rem}
+.controls{display:flex;gap:.45rem;flex-wrap:wrap;margin:.9rem 0 .65rem}button{font:inherit;font-weight:650;color:var(--text);border:1px solid #7f96c8;border-radius:.6rem;background:var(--panel);padding:.42rem .7rem;cursor:pointer}button[aria-pressed=true]{color:#0d2332;background:var(--ref);border-color:var(--ref)}
+canvas{display:block;width:100%;height:auto;background:var(--panel);border-radius:.85rem;touch-action:pan-y;cursor:grab}canvas:active{cursor:grabbing}
+.angle{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem .75rem;margin:.55rem 0;color:var(--muted)}input{min-width:7rem;flex:1;accent-color:var(--ref)}
+table{border-collapse:collapse;width:100%;margin:.25rem 0 .7rem;font-variant-numeric:tabular-nums}th,td{text-align:right;padding:.24rem .35rem;border-bottom:1px solid #4c5c83}th:first-child{text-align:left}#reference{color:var(--ref)}#candidate{color:var(--cand)}#note{font-weight:650}details{margin-top:.75rem;color:var(--muted)}summary{cursor:pointer}a{color:var(--ref)}
+</style>
+<main>
+<h1>Interventional means</h1>
+<p class="intro">Compare two binary-linear causal models by their predictions for nodes X, Z and reward Y.</p>
+<div class="controls" id="actions" role="group" aria-label="Choose an intervention">
+<button type="button" data-action="0" aria-pressed="true">Null</button>
+<button type="button" data-action="1" aria-pressed="false">Set X = 1</button>
+<button type="button" data-action="2" aria-pressed="false">Set Z = 1</button>
+</div>
+<canvas id="cube" width="700" height="430" role="img" aria-label="Rotatable cube with X, Z and Y axes, a circle for the reference means, and a diamond for the candidate. Exact values are in the table."></canvas>
+<label class="angle" for="angle">Rotate cube <input type="range" id="angle" min="-45" max="105" value="24" aria-label="Rotation angle in degrees"></label>
+<h2 id="action-title">Null intervention</h2>
+<table aria-label="Exact interventional means">
+<thead><tr><th scope="col">Model</th><th scope="col">X</th><th scope="col">Z</th><th scope="col">Y</th></tr></thead>
+<tbody>
+<tr id="reference"><th scope="row">● Reference</th><td>0.20</td><td>0.20</td><td>0.24</td></tr>
+<tr id="candidate"><th scope="row">◇ Candidate</th><td>0.20</td><td>0.20</td><td>0.26</td></tr>
+</tbody></table>
+<p id="note" aria-live="polite">The reward prediction differs by +0.02. Both parent means agree.</p>
+<details><summary>How to read the example</summary>
+<p>The reference model is shown for explanation. A learner sees sampled node values and compares the predictions of its remaining models. Setting X to one clamps X, while the disagreement in Z and Y gives two coordinates for comparing the models. In this example the reward prediction error is 0.14 = 0.22 + 0.20 × (−0.40), where 0.22 is the fitted reward-row residual evaluated on the reference means.</p>
+<p>Try all three interventions. Drag horizontally on the cube or move the rotation slider.</p>
+</details>
+</main>
+<script>
+"use strict";
+const fixtures = [
+  {label:"Null intervention", reference:[20,20,24], candidate:[20,20,26], note:"The reward prediction differs by +0.02. Both parent means agree."},
+  {label:"Set X = 1", reference:[100,60,60], candidate:[100,20,74], note:"Z differs by −0.40 and reward differs by +0.14. X is fixed."},
+  {label:"Set Z = 1", reference:[20,100,64], candidate:[60,100,66], note:"X differs by +0.40 and reward differs by +0.02. Z is fixed."}
+];
+const vertices = [];
+for (const x of [0,1]) for (const z of [0,1]) for (const y of [0,1]) vertices.push([x,z,y]);
+const canvas = document.getElementById("cube");
+const context = canvas.getContext("2d");
+const slider = document.getElementById("angle");
+const buttons = Array.from(document.querySelectorAll("button[data-action]"));
+let selection = 0;
+function project(point) {
+  const [x,z,y]=point.map(value=>2*value-1);
+  const angle=Number(slider.value)*Math.PI/180;
+  const u=Math.cos(angle),v=Math.sin(angle);
+  return [350+144*(u*x-v*z),207+62*(v*x+u*z)-98*y];
+}
+function segment(a,b,color,width) {
+  context.beginPath();context.moveTo(...a);context.lineTo(...b);
+  context.strokeStyle=color;context.lineWidth=width;context.stroke();
+}
+function render() {
+  context.clearRect(0,0,canvas.width,canvas.height);
+  const scene=fixtures[selection];
+  for (const [index,a] of vertices.entries()) {
+    for (const b of vertices.slice(index+1)) {
+      if(a.reduce((sum,value,i)=>sum+Math.abs(value-b[i]),0)===1) segment(project(a),project(b),"#5a6b96",3);
+    }
+  }
+  context.fillStyle="#bdc9e2";context.font="bold 36px system-ui";
+  for (const [point,label,offset] of [[[1,0,0],"X",[16,3]],[[0,1,0],"Z",[-35,15]],[[0,0,1],"Y",[-32,0]]]) {
+    const [x,y]=project(point);context.fillText(label,x+offset[0],y+offset[1]);
+  }
+  const reference=project(scene.reference.map(value=>value/100));
+  const candidate=project(scene.candidate.map(value=>value/100));
+  segment(reference,candidate,"#f4f7ff",4);
+  const [x,y]=candidate;
+  context.beginPath();context.moveTo(x,y-17);context.lineTo(x+17,y);context.lineTo(x,y+17);context.lineTo(x-17,y);context.closePath();
+  context.fillStyle="#11152b";context.fill();context.strokeStyle="#eeadff";context.lineWidth=4;context.stroke();
+  context.beginPath();context.arc(...reference,8,0,2*Math.PI);context.fillStyle="#60efc7";context.fill();
+}
+function select(index) {
+  selection=index;
+  const scene=fixtures[selection];
+  document.getElementById("action-title").textContent=scene.label;
+  document.getElementById("note").textContent=scene.note;
+  for (const key of ["reference","candidate"]) {
+    document.getElementById(key).querySelectorAll("td").forEach((cell,i)=>{
+      cell.textContent=(scene[key][i]/100).toFixed(2);
+    });
+  }
+  buttons.forEach((button,i)=>button.setAttribute("aria-pressed",String(index===i)));
+  render();
+}
+buttons.forEach((button,index)=>button.addEventListener("click",()=>select(index)));
+slider.addEventListener("input",render);
+let drag=null;
+canvas.addEventListener("pointerdown",event=>{
+  drag=[event.clientX,Number(slider.value)];
+  canvas.setPointerCapture(event.pointerId);
+});
+canvas.addEventListener("pointermove",event=>{
+  if(!drag)return;
+  slider.value=String(Math.max(-45,Math.min(105,drag[1]+(event.clientX-drag[0])*0.65)));
+  render();
+});
+for(const event of ["pointerup","pointercancel","lostpointercapture"]) canvas.addEventListener(event,()=>{drag=null;});
+select(0);
+</script>
+</html>

@@ -1,0 +1,32 @@
+{
+  "title": "Gap-free regret for binary linear causal bandits",
+  "upload_type": "software",
+  "publication_date": "2026-11-27",
+  "version": "1.0.0",
+  "creators": [
+    {
+      "name": "DannyExperiments"
+    }
+  ],
+  "keywords": [
+    "causal bandits",
+    "gap-free regret",
+    "binary linear structural models",
+    "unknown causal DAG",
+    "combinatorial hard interventions",
+    "full feedback",
+    "optimism and squared-loss confidence",
+    "atomic interventions"
+  ],
+  "description": "<p>This note answers the statistical regret question after Theorem 9 of Feng, Xiong and Chen's ACML proceedings paper Combinatorial Causal Bandits without Graph Skeleton. For an unknown, fully observed binary-linear Markovian DAG with a known finite menu of hard interventions, the algorithm achieves expected cumulative regret O(d³√T log(2dT)), where d counts binary variables including the reward and T is the horizon. Nonzero causal weights can be arbitrarily small.</p><p>The algorithm enumerates a finite rational grid of acyclic coefficient models and optimizes reward over a confidence set built from squared prediction loss on the full outcome vector. A row residual is the difference between the selected model's linear mean equation at the true interventional mean and the corresponding true mean. Its squared history is controlled by prediction confidence. Propagation in the selected model's own order and a rowwise determinant potential turn these bounds into the square-root horizon rate. The algorithm requires no supplied topological order or positive weight gap. Enumeration can take exponential time. An efficient implementation using the original paper's pair-oracle model, latent variables and optimal node dependence for general menus remain outside the result.</p><p>For the null-plus-signed-atomic menu with m ≥ 2 intervenable nodes, a separate argument gives minimax order min(T, √(mT)) by adapting Lattimore, Lattimore and Reid's rare-root family and KL argument to cumulative regret, with a MOSS upper bound. A single intervenable node has zero regret by monotonicity. The atomic comparison is credited to these earlier methods and applies to its specific menu.</p><p>The release includes the manuscript, LaTeX source, bibliography, citation metadata, evidence archive and repository checksums. The exact replay checks 1,200 rational model/action pairs, the full two-node first-round model grid, 915 atomic-family cases and the prediction fixture shown in the illustrated offline explorer. Mathematical review was internal. External peer review and formal verification are pending.</p><p>ChatGPT Astra 6.2 (OpenAI) generated the recovered proof, atomic-menu supplement and original replay under human direction. OpenAI Codex independently reviewed the mathematics. GPT-6.2 Sol (OpenAI) checked primary sources and prepared the manuscript, extended replay and worked illustration. DannyExperiments is the project citation identity.</p>",
+  "access_right": "open",
+  "license": "other-closed",
+  "notes": "All rights reserved. Publicly downloadable files are supplied without a repository-wide reuse license.",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/DannyExperiments/gap-free-binary-linear-causal-bandits/releases/tag/v1.0.0",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    }
+  ]
+}

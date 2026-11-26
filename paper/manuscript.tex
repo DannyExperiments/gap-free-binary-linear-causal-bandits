@@ -1,0 +1,147 @@
+\documentclass[11pt,a4paper]{amsart}
+\usepackage[hmargin=.83in,vmargin=.70in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{amssymb}
+\usepackage[hidelinks]{hyperref}
+\hypersetup{pdftitle={Gap-free regret for binary linear causal bandits}}
+\urlstyle{same}
+\setlength{\emergencystretch}{2em}
+\linespread{0.95}
+\DeclareMathSizes{8}{8}{8}{8}
+\DeclareMathSizes{9}{9}{8}{8}
+\DeclareMathSizes{10.95}{10.95}{8}{8}
+\renewcommand{\bibliofont}{\normalsize\raggedright}
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}[theorem]{Proposition}
+\newcommand{\E}{\mathbb E}
+\newcommand{\KL}{\operatorname{KL}}
+\title[Gap-free binary linear causal bandits]{Gap-free regret for binary linear causal bandits}
+\date{}
+\begin{document}
+\begin{abstract}
+We give an optimistic algorithm for an unknown fully observed binary linear causal DAG with nonnegative weights and a fixed finite menu of hard interventions. If $d$ counts the binary variables including the reward and $T$ is the horizon, expected regret is $O(d^3\sqrt{T}\log(2dT))$ without a positive lower bound on the nonzero weights. Confidence uses the entire vector of interventional means. A rowwise residual identity and a determinant potential bound errors without recovering a topological order. The algorithm uses finite enumeration and does not give an efficient pair-oracle implementation. A separate atomic-menu comparison adapts an earlier parallel-bandit lower bound.
+\end{abstract}
+\maketitle
+
+\section{Model and result}
+Let the nodes be $d$ binary variables including the terminal reward $Y$, together with a constant intercept. Put $D=d+1$. The learner sees the outcome vector of the chosen hard intervention. The action menu $\mathcal A$ is any known finite set of assignments to subsets of nonreward, nonintercept nodes. The causal DAG and its coefficients are unknown. The Markovian binary linear model of Feng, Xiong and Chen \cite[\S3]{feng} has nonnegative weights and centered exogenous structural noise with valid probabilities for every parent assignment. Taking expectations at the all-ones parent assignment bounds the sum of every weight row by one, including the intercept. For fixed action $a$, let $\mu_*(a)\in[0,1]^D$ be the intervened mean vector, with intercept one. A hard intervention fixes the corresponding means. For any nonintervened row $v$,
+\[
+                     \mu_{*,v}(a)=\theta_{*,v}^{\top}\mu_*(a).
+\]
+The observation vector conditional on the past and chosen action has this same interventional mean. The concentration argument allows dependence across coordinates.
+
+Feng, Xiong and Chen \cite[Theorem 9 and following paragraph]{feng} give $O(d^3T^{2/3}\log T)$ without a weight gap and ask for square-root regret. We answer that statistical question on the fully observed binary-linear model. We compare with the best fixed action in $\mathcal A$ using expected cumulative regret.
+
+\begin{theorem}
+For each $d,T\geq1$, a known-horizon algorithm has expected regret $O(d^3\sqrt{T}\log(2dT))$. No positive lower bound on nonzero causal weights is required.
+\end{theorem}
+
+\section{A finite model set and an exact policy}
+Set $q=D^3T^2$ and $h=1/q$. Enumerate all nonnegative coefficient matrices with entries multiples of $h$, each row sum at most one, zero self-loops and acyclic support. The intercept row is fixed. Restricting the reward to be terminal is allowed. For each candidate $M$ compute $\mu_M(a)$ by a topological pass with the given intervention. All predictions belong to $[0,1]^D$. The number $N$ of candidates is at most $N_0=(q+1)^{dD}$.
+
+Rounding the true weights down preserves the row bounds and acyclicity. The resulting $M_0$ has
+\[
+ e_0=\max_{a\in\mathcal A}\|\mu_{M_0}(a)-\mu_*(a)\|_\infty
+ \leq dDh\leq 1/(dT).
+\]
+For a nonintervened node, the error from rounding its coefficients at the true mean is at most $Dh$. By the row-sum bound, propagation from predecessors adds at most the largest previous error. A topological pass has at most $d$ nonconstant steps, and the intercept and intervened values agree exactly.
+
+Let $Z_i$ denote the $d$ nonconstant bits observed at round $i$. Set
+\[
+       L_s(M)=\sum_{i=1}^s\|Z_i-\mu_M(a_i)\|_2^2 ,
+\]
+where loss expressions omit the intercept. Put $\alpha=1/(T+1)$ and let $c$ be $d$ times the binary bit length of the positive integer $N_0(T+1)^2$. In particular $c\geq d\log(N(T+1)/\alpha)$, and $c=O(d^3\log(2dT))$. Before round $t$ use the set
+\[
+ \mathcal M_t=\{M:L_{t-1}(M)\leq \min_{M'}L_{t-1}(M')+c+2\}.
+\]
+Choose a pair $(M_t,a_t)$ maximizing $\mu_{M_t,Y}(a_t)$ over this set and $\mathcal A$, breaking ties by a fixed order. All arithmetic in the policy is rational. Computing each mean prediction is a topological pass, but the number of models and actions to enumerate can be exponential. The proof does not implement the row-ellipsoid pair oracle discussed in \cite{feng}.
+
+\section{Uniform prediction confidence}
+Fix $M$. For round $i$ set $\delta_i=\mu_M(a_i)-\mu_*(a_i)$, with the intercept omitted, and put
+$W_i=2\langle Z_i-\mu_*(a_i),\delta_i\rangle$.
+Given the past and action, $W_i$ is centered and its range has length at most $2\|\delta_i\|_1\leq2\sqrt d\,\|\delta_i\|_2$. Hoeffding's lemma at parameter $1/d$ makes
+\[
+ \exp\left(\frac1d\sum_{i=1}^s
+          \left(W_i-\tfrac12\|\delta_i\|_2^2\right)\right)
+\]
+a supermartingale starting at one. Taking a union bound over models and prefixes gives an event of probability at least $1-\alpha$ on which, for every $s$ and $M$,
+\[
+ L_s(M)-L_s(*)\geq\tfrac12\sum_{i\leq s}\|\delta_i\|_2^2-c .
+\]
+The true loss $L_s(*)$ appears only in the analysis. Squared loss on a probability is $2$-Lipschitz in its prediction, so $|L_s(M_0)-L_s(*)|\leq2dTe_0\leq2$ deterministically. On the event, the minimum model loss lies between $L_s(*)-c$ and $L_s(*)+2$. Thus $M_0\in\mathcal M_t$ for every $t$. Also each model in $\mathcal M_t$ satisfies the bound on cumulative squared discrepancy
+\[
+                  \sum_{i<t}\|\delta_i\|_2^2\leq B,\qquad B=4c+8.
+\]
+The use of a squared-loss confidence set follows the optimistic prediction framework of Russo and Van Roy \cite{russo}. We next exploit the causal class to bound the cost of exploration.
+
+\section{Residuals and the determinant potential}
+Fix the chosen candidate at a round and write its row as $\theta_v$. For earlier actions let $x_i=\mu_*(a_i)$ be the true augmented mean, and let $e_i=\mu_M(a_i)-x_i$. These are analysis quantities. For $v$ not intervened on at $i$, subtracting the two mean equations gives
+\[
+         (\theta_v-\theta_{*,v})^\top x_i=e_{i,v}-\theta_v^\top e_i .
+\]
+This relation holds even when the two models have different topological orders. Since $\|\theta_v\|_2\leq1$, its absolute value is at most $2\|e_i\|_2$. For each row set
+\[
+ V_{t,v}=D I+\sum_{\substack{i<t\\v\ \mathrm{not\ intervened\ on}}}x_ix_i^\top .
+\]
+The selected model is plausible against the entire past, so on the good event
+$\|\theta_v-\theta_{*,v}\|^2_{V_{t,v}}\leq4D+4B$. Put $\rho=\sqrt{4D+4B}$. The absolute residual at the current action is at most $\rho\|x_t\|_{V_{t,v}^{-1}}$.
+
+Now propagate the errors in the selected model's own topological order. At an intervened row or the intercept the error is zero. Otherwise its absolute value is at most the absolute residual plus the largest preceding error, because the candidate coefficients are nonnegative with sum at most one. Therefore the reward discrepancy is bounded by the sum of absolute residuals on nonintervened rows. The optimistic reward of the chosen pair is at least the optimal action's reward under $M_0$, so the true per-round gap is bounded by $e_0$ plus this sum of widths.
+
+For each row, write $z_{t,v}=\|x_t\|_{V_{t,v}^{-1}}$ and count it only on rounds when that row is not intervened on. These widths satisfy $z_{t,v}^2\leq1$ because $V_{t,v}\succeq D I$ and $\|x_t\|_2^2\leq D$. The determinant lemma and the trace bound give
+\[
+ \sum_t z_{t,v}^2\leq 2\log\frac{\det V_{T+1,v}}{\det(DI)}
+                  \leq 2D\log(1+T/D).
+\]
+Indeed a counted update multiplies the determinant by $1+z_{t,v}^2$, and the arithmetic-geometric mean inequality bounds the determinant by the trace. Thus one row contributes at most $\sqrt{2TD\log(1+T/D)}$ to the sum of widths. Summing the regret bound over rows gives
+\[
+          T e_0+d\rho\sqrt{2TD\log(1+T/D)}
+          =O(d^3\sqrt{T}\log(2dT)).
+\]
+The complement event contributes at most $\alpha T\leq1$ in expectation. This proves the theorem. No step of the policy needs the true design $V_{t,v}$.
+
+\begin{figure}[t]
+\centering
+\begin{tabular}{c|c|c}
+ action & reference means $(X,Z,Y)$ & candidate means $(X,Z,Y)$\\ \hline
+ null & $(.20,.20,.24)$ & $(.20,.20,.26)$\\
+ $\mathrm{do}(X=1)$ & $(1,.60,.60)$ & $(1,.20,.74)$\\
+ $\mathrm{do}(Z=1)$ & $(.20,1,.64)$ & $(.60,1,.66)$
+\end{tabular}
+\caption{Worked predictions for two models with opposite order on $X,Z$. The fixed $X$ coordinate agrees under $\mathrm{do}(X=1)$. The observed $Z$ coordinate can expose an error even when the predicted reward is optimistic. The companion replay specifies both models exactly.}
+\end{figure}
+
+\section{Atomic-menu comparison}
+The following is a cumulative-regret adaptation of the hard family and KL argument in Lattimore, Lattimore and Reid \cite[Theorem 2 and its proof]{lattimore}. It illustrates the time exponent for a particular menu.
+
+\begin{proposition}
+For $m\geq2$ intervenable nodes and the menu consisting of the null and both atomic assignments at every node, minimax expected regret is $\Theta(\min\{T,\sqrt{mT}\})$. For $m=1$ it is zero.
+\end{proposition}
+
+The upper bound uses Audibert and Bubeck's MOSS \cite[Theorem 5]{moss} on the $2m+1$ actions, ignoring auxiliary observations, together with the trivial cap $T$. For the lower bound take $m$ independent Bernoulli roots with rate $r=1/m$. Give the baseline reward conditional probability
+\[
+ p_0(x)=\tfrac12+\tfrac1{8m}\sum_i x_i ,
+\]
+and in alternative $j$ add $\delta x_j$ where
+$\delta=\tfrac18\min\{1,\sqrt{m/T}\}$.
+All probabilities lie in $[1/2,3/4]$. The common positive coefficients preserve the same DAG even if the learner knows it. Action $\mathrm{do}(X_j=1)$ uniquely maximizes reward in model $j$, with gap at least $\delta(1-r)$ against any other action. This uses that the baseline maximizers are the assignments of any one root to one.
+
+Write $N_j$ for the number of times this action is played. Pick $j$ with $\E_0N_j\leq T/m$. At a given action the root feedback law is identical under the two models. Conditional on the roots, the Bernoulli reward KL from baseline to alternative is at most $6\delta^2 x_j$ by the chi-square bound. In the full transcript the action kernels cancel. Thus the KL chain rule yields
+\[
+        \KL(P_0\|P_j)\leq6\delta^2(\E_0N_j+rT)
+                      \leq12\delta^2T/m.
+\]
+Pinsker's inequality applied to $N_j/T\in[0,1]$ gives
+$\E_j N_j/T\leq 1/m+\sqrt6/8$. The regret is therefore at least
+$\delta(1-r)T(1-1/m-\sqrt6/8)$, which exceeds
+$\min\{T,\sqrt{mT}\}/100$ for $m\geq2$.
+For $m=1$ simply use $\mathrm{do}(X_1=1)$. The nonnegative mean recurrence, compared in topological order, shows it weakly dominates setting the node to zero or making no intervention.
+
+This comparison applies to the stated menu. Extra simultaneous interventions can reduce the regret. The best dimension dependence for general menus and efficient implementation of the main algorithm remain open.
+
+\section*{AI assistance}
+ChatGPT Astra 6.2 (OpenAI) generated the recovered proof, atomic-menu supplement and original replay under human direction. OpenAI Codex independently reviewed the mathematics. GPT-6.2 Sol (OpenAI) checked primary sources and prepared this manuscript, the extended replay and illustration. DannyExperiments is the project citation identity.
+
+\bibliographystyle{amsplain}
+\bibliography{references}
+\end{document}

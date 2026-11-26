@@ -1,0 +1,30 @@
+cff-version: 1.2.0
+message: "Cite this version of the research release."
+type: software
+title: "Gap-free regret for binary linear causal bandits"
+authors:
+  - name: "DannyExperiments"
+version: "1.0.0"
+date-released: 2026-11-27
+doi: "10.5281/zenodo.24571499"
+url: "https://doi.org/10.5281/zenodo.24571499"
+repository-code: "https://github.com/DannyExperiments/gap-free-binary-linear-causal-bandits"
+keywords:
+  - "causal bandits"
+  - "gap-free regret"
+  - "binary linear structural models"
+  - "unknown causal DAG"
+  - "combinatorial hard interventions"
+  - "full feedback"
+  - "optimism and squared-loss confidence"
+  - "atomic interventions"
+preferred-citation:
+  type: software
+  title: "Gap-free regret for binary linear causal bandits"
+  authors:
+    - name: "DannyExperiments"
+  version: "1.0.0"
+  date-released: 2026-11-27
+  doi: "10.5281/zenodo.24571499"
+  url: "https://doi.org/10.5281/zenodo.24571499"
+  repository-code: "https://github.com/DannyExperiments/gap-free-binary-linear-causal-bandits"
